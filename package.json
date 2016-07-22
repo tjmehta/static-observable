@@ -1,0 +1,46 @@
+{
+  "name": "static-observable",
+  "version": "0.0.0",
+  "description": "Static observable methods `next`, `error`, and `complete`. Equivalent to `Promise.resolve()` and `Promise.reject()` for promises.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "101": "^1.6.1",
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.4",
+    "mocha": "^2.5.3",
+    "rxjs": "^5.0.0-beta.10"
+  },
+  "peerDependencies": {
+    "rxjs": "^5.0.0-beta.10"
+  },
+  "scripts": {
+    "test": "istanbul cover _mocha ./test && istanbul --text check-coverage --statements 100 --functions 100 --branches 100 --lines 100",
+    "test-watch": "nodemon -x mocha ./test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tjmehta/static-observable.git"
+  },
+  "keywords": [
+    "observable",
+    "static",
+    "methods",
+    "next",
+    "error",
+    "complete",
+    "completed",
+    "onNext",
+    "onError",
+    "immediate"
+  ],
+  "author": "Tejesh Mehta",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tjmehta/static-observable/issues"
+  },
+  "homepage": "https://github.com/tjmehta/static-observable#readme"
+}
