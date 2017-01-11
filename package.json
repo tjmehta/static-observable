@@ -1,6 +1,6 @@
 {
   "name": "static-observable",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Static observable methods `next`, `error`, and `complete`. Equivalent to `Promise.resolve()` and `Promise.reject()` for promises.",
   "main": "index.js",
   "directories": {
