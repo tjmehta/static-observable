@@ -9,17 +9,17 @@
   "dependencies": {},
   "devDependencies": {
     "101": "^1.6.1",
-    "chai": "^3.5.0",
-    "istanbul": "^0.4.4",
-    "mocha": "^3.2.0",
-    "rxjs": "^5.0.0-beta.10"
+    "jest": "^25.1.0",
+    "prettier": "^1.19.1",
+    "rxjs": "^6.5.4",
+    "rxjs-compat": "^6.5.4"
   },
   "peerDependencies": {
-    "rxjs": "^5.0.0-beta.10"
+    "rxjs-compat": "^6.0.0",
+    "rxjs": "^5.0.0 || ^6.0.0"
   },
   "scripts": {
-    "test": "istanbul cover _mocha ./test && istanbul --text check-coverage --statements 100 --functions 100 --branches 100 --lines 100",
-    "test-watch": "nodemon -x mocha ./test"
+    "test": "jest"
   },
   "repository": {
     "type": "git",

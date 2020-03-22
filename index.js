@@ -1,7 +1,3 @@
-'use strict'
-
-var util = require('util')
-
 var Observable = require('rxjs/Observable').Observable
 var Subscription = require('rxjs/Subscription').Subscription
 
@@ -10,12 +6,12 @@ module.exports = StaticObservable
 /**
  * @class StaticObservable
  */
-function StaticObservable () {
+function StaticObservable() {
   Observable.call(this, subscribe)
   var self = this
   this._observer = null
   this._observerCalls = []
-  function subscribe (observer) {
+  function subscribe(observer) {
     self._observer = observer
     while (self._observerCalls.length) {
       var call = self._observerCalls.shift()
@@ -24,9 +20,6 @@ function StaticObservable () {
     return new Subscription()
   }
 }
-
-// inherit from observable
-util.inherits(StaticObservable, Observable)
 
 /**
  * StaticObservable factories
@@ -37,7 +30,7 @@ util.inherits(StaticObservable, Observable)
  * @param  {*} next  observable next value
  * @return {Observable} observable
  */
-StaticObservable.next = function () {
+StaticObservable.next = function() {
   var observable = new StaticObservable()
   return observable.next.apply(observable, arguments)
 }
@@ -47,7 +40,7 @@ StaticObservable.next = function () {
  * @param  {Error} error  observable error
  * @return {Observable} observable
  */
-StaticObservable.error = function () {
+StaticObservable.error = function() {
   var observable = new StaticObservable()
   return observable.error.apply(observable, arguments)
 }
@@ -56,10 +49,13 @@ StaticObservable.error = function () {
  * returns an Observable that is immediately "completed"
  * @return {Observable} observable
  */
-StaticObservable.complete = function () {
+StaticObservable.complete = function() {
   var observable = new StaticObservable()
   return observable.complete.apply(observable, arguments)
 }
+
+// inherit from observable
+StaticObservable.prototype = Object.create(Observable.prototype)
 
 /**
  * Chainable instance methods
@@ -71,8 +67,8 @@ StaticObservable.prototype.error = observerCall('error')
 
 StaticObservable.prototype.complete = observerCall('complete')
 
-function observerCall (method) {
-  return function () {
+function observerCall(method) {
+  return function() {
     var _observer = this._observer
     if (_observer) {
       _observer[method].apply(_observer, arguments)

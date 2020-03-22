@@ -1,183 +1,175 @@
-'use strict'
-
-var beforeEach = global.beforeEach
-var describe = global.describe
-var it = global.it
-
-var exists = require('101/exists')
-var expect = require('chai').expect
-
 var StaticObservable = require('../index.js')
 
-var expectNotCalled = function (name, done) {
-  return function (err) {
-    if (name === 'onError') {
-      return done(err)
-    }
-    done(new Error('expect "' + name + '" function is not called'))
-  }
-}
-var recordCall = function (name, calls, cb) {
-  return function () {
-    calls.push({
-      method: name,
-      args: Array.prototype.slice.call(arguments)
-        .filter(exists) // onComplete is passing an undefined arg?
-    })
-    if (cb) { cb() }
-  }
-}
-
-describe('static-observable', function () {
-  describe('next', function () {
-    it('should create a static observable that immediately nexts', function (done) {
+describe('static-observable', () => {
+  describe('next', () => {
+    it('should create a static observable that immediately nexts', done => {
       var next = { foo: 1 }
       var observable = StaticObservable.next(next)
-      observable.subscribe(
-        function (_next) {
-          expect(_next).to.equal(next)
-          done()
-        },
-        expectNotCalled('onError', done),
-        expectNotCalled('onCompleted', done)
-      )
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete)
+      setTimeout(() => {
+        expect(onNext).toHaveBeenCalledWith(next)
+        expect(onError).not.toHaveBeenCalled()
+        expect(onComplete).not.toHaveBeenCalled()
+        done()
+      }, 0)
     })
 
-    it('should chain', function (done) {
-      var values = [{}, {}]
-      var observable = StaticObservable
-        .next(values[0])
+    it('should chain', done => {
+      var values = [{ foo: 1 }, { foo: 2 }]
+      var observable = StaticObservable.next(values[0])
         .next(values[1])
         .complete()
-      var calls = []
-      observable.subscribe(
-        recordCall('onNext', calls),
-        expectNotCalled('onError', done),
-        recordCall('onCompleted', calls, finish)
-      )
-      function finish () {
-        expect(calls).to.deep.equal([
-          { method: 'onNext', args: values.slice(0, 1) },
-          { method: 'onNext', args: values.slice(1, 2) },
-          { method: 'onCompleted', args: [] }
-        ])
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete)
+      setTimeout(() => {
+        expect(onNext).toHaveBeenNthCalledWith(1, values[0])
+        expect(onNext).toHaveBeenNthCalledWith(2, values[1])
+        expect(onError).not.toBeCalled()
+        expect(onComplete).toBeCalled()
+        expect(
+          onNext.mock.invocationCallOrder.concat(
+            onComplete.mock.invocationCallOrder
+          )
+        ).toMatchInlineSnapshot(`
+          Array [
+            2,
+            3,
+            4,
+          ]
+        `)
         done()
-      }
+      }, 0)
     })
 
-    it('should work after subscribe', function (done) {
+    it('should work after subscribe', done => {
       var values = [{}, {}]
       var observable = StaticObservable.next(values[0])
-      var calls = []
-      observable.subscribe(
-        recordCall('onNext', calls),
-        expectNotCalled('onError', done),
-        recordCall('onCompleted', calls, finish)
-      )
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete)
       // after subscribe: covers next AND complete!
-      observable
-        .next(values[1])
-        .complete()
-      function finish () {
-        expect(calls).to.deep.equal([
-          { method: 'onNext', args: values.slice(0, 1) },
-          { method: 'onNext', args: values.slice(1, 2) },
-          { method: 'onCompleted', args: [] }
-        ])
+      observable.next(values[1]).complete()
+      setTimeout(() => {
+        expect(onNext).toHaveBeenNthCalledWith(1, values[0])
+        expect(onNext).toHaveBeenNthCalledWith(2, values[1])
+        expect(onError).not.toBeCalled()
+        expect(onComplete).toBeCalled()
+        expect(
+          onNext.mock.invocationCallOrder.concat(
+            onComplete.mock.invocationCallOrder
+          )
+        ).toMatchInlineSnapshot(`
+          Array [
+            5,
+            6,
+            7,
+          ]
+        `)
         done()
-      }
+      }, 0)
     })
   })
 
-  describe('error', function () {
-    it('should create a static observable that immediately errors', function (done) {
+  describe('error', () => {
+    it('should create a static observable that immediately errors', done => {
       var err = new Error('boom')
       var observable = StaticObservable.error(err)
-      observable.subscribe(
-        expectNotCalled('onNext', done),
-        function (_err) {
-          expect(_err).to.equal(err)
-          done()
-        },
-        expectNotCalled('onCompleted', done)
-      )
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete)
+      setTimeout(() => {
+        expect(onNext).not.toHaveBeenCalled()
+        expect(onError).toHaveBeenCalledWith(err)
+        expect(onComplete).not.toHaveBeenCalled()
+        done()
+      }, 0)
     })
 
-    it('should not ignore any calls after', function (done) {
+    it('should ignore any calls after', done => {
       var values = [{}, {}]
-      var observable = StaticObservable
-        .complete()
+      var err = new Error('boom')
+      var observable = StaticObservable.error(err)
         .next(values[0])
         .next(values[1])
-      var calls = []
-      observable.subscribe(
-        expectNotCalled('onNext', done),
-        expectNotCalled('onError', done),
-        recordCall('onCompleted', calls, finish)
-      )
-      function finish () {
-        expect(calls).to.deep.equal([
-          { method: 'onCompleted', args: [] }
-        ])
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete)
+      setTimeout(() => {
+        expect(onNext).not.toHaveBeenCalled()
+        expect(onError).toHaveBeenCalledWith(err)
+        expect(onComplete).not.toHaveBeenCalled()
         done()
-      }
+      }, 0)
     })
 
-    it('should work after subscribe', function (done) {
+    it('should work after subscribe', function(done) {
       var next = {}
       var err = new Error()
       var observable = StaticObservable.next(next)
-      var calls = []
-      observable.subscribe(
-        recordCall('onNext', calls),
-        recordCall('onError', calls, finish),
-        expectNotCalled('onCompleted', done)
-      )
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete)
       // after subscribe
       observable.error(err)
-      function finish () {
-        expect(calls).to.deep.equal([
-          { method: 'onNext', args: [next] },
-          { method: 'onError', args: [err] },
-        ])
+      setTimeout(() => {
+        expect(onNext).toHaveBeenCalledWith(next)
+        expect(onError).toHaveBeenCalledWith(err)
+        expect(onComplete).not.toHaveBeenCalled()
+        expect(
+          onNext.mock.invocationCallOrder.concat(
+            onError.mock.invocationCallOrder
+          )
+        ).toMatchInlineSnapshot(`
+          Array [
+            10,
+            11,
+          ]
+        `)
         done()
-      }
+      }, 0)
     })
   })
 
   describe('complete', function() {
-    it('should create a static observable that immediately completes', function (done) {
-      var err = new Error('boom')
-      var observable = StaticObservable.error(err)
-      observable.subscribe(
-        expectNotCalled('onNext', done),
-        function (_err) {
-          expect(_err).to.equal(err)
-          done()
-        },
-        expectNotCalled('onCompleted', done)
-      )
+    it('should create a static observable that immediately completes', function(done) {
+      var observable = StaticObservable.complete()
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete)
+      setTimeout(() => {
+        expect(onNext).not.toHaveBeenCalled()
+        expect(onError).not.toHaveBeenCalled()
+        expect(onComplete).toHaveBeenCalled()
+        done()
+      }, 0)
     })
 
-    it('should not ignore any calls after', function (done) {
+    it('should ignore any calls after', function(done) {
       var err = new Error('boom')
       var values = [{}, {}]
-      var observable = StaticObservable
-        .error(err)
+      var observable = StaticObservable.complete(err)
         .next(values[0])
         .next(values[1])
-      var calls = []
-      observable.subscribe(
-        expectNotCalled('onNext', done),
-        recordCall('onError', calls, finish),
-        expectNotCalled('onCompleted', done)
-      )
-      function finish () {
-        expect(calls).to.deep.equal([
-          { method: 'onError', args: [err] }
-        ])
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete)
+      setTimeout(() => {
+        expect(onNext).not.toHaveBeenCalled()
+        expect(onError).not.toHaveBeenCalled()
+        expect(onComplete).toHaveBeenCalled()
         done()
-      }
+      }, 0)
     })
   })
 })
