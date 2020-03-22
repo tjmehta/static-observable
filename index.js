@@ -17,7 +17,13 @@ function StaticObservable() {
       var call = self._observerCalls.shift()
       observer[call.method].apply(observer, call.args)
     }
-    return new Subscription()
+    return new Subscription(() => {
+      this._observer = {
+        next: () => {},
+        error: () => {},
+        complete: () => {}
+      }
+    })
   }
 }
 

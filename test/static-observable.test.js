@@ -172,4 +172,24 @@ describe('static-observable', () => {
       }, 0)
     })
   })
+
+  describe('unsubscribe', () => {
+    it('should ignore any next after', function(done) {
+      var err = new Error('boom')
+      var values = [{ foo: 1 }, { foo: 2 }]
+      var observable = StaticObservable.next(values[0])
+      var onNext = jest.fn()
+      var onError = jest.fn()
+      var onComplete = jest.fn()
+      observable.subscribe(onNext, onError, onComplete).unsubscribe()
+      observable.next(values[1])
+      setTimeout(() => {
+        expect(onNext).toHaveBeenCalledWith(values[0])
+        expect(onNext).not.toHaveBeenCalledWith(values[1])
+        expect(onError).not.toHaveBeenCalled()
+        expect(onComplete).not.toHaveBeenCalled()
+        done()
+      }, 0)
+    })
+  })
 })
